@@ -1,72 +1,60 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "./parse-lisp.h"
+#include "./container/list.h"
+//#include "./parse-lisp.h"
 
-size_t MAX_INPUT = 1024;
+int main(/*int argc, char **argv*/) {
+    int v0 = 0, v1 = 1, v2 = 1, v3 = 2, v4 = 3, v5 = 5, v6 = 8, v7 = 13;
+    ImmutableList *list = list_create(8, 
+                                      0, &v0,
+                                      0, &v1,
+                                      0, &v2,
+                                      0, &v3,
+                                      0, &v4,
+                                      0, &v5,
+                                      0, &v6,
+                                      0, &v7);
 
-int main(int argc, char **argv) {
-    if(! (argc >= 2) ) {
-        puts("A filename is expected.\n");
-        return 10;
+    ImmutableList *orig = list;
+
+    // test prepend
+    printf("length before: %d\n", list->length);
+    int pref = 42;
+    list = list_prepend(list, 0, &pref);
+    printf("length after: %d\n", list->length);
+
+    // test append
+    printf("length before: %d\n", list->length);
+    int aff = 21;
+    list = list_append(list, 0, &aff);
+    list = list_append(list, 0, &aff);
+    printf("length after: %d\n", list->length);
+
+    printf("update: [ ");
+    unsigned int l = list->length;
+    for(unsigned int i = 0; i < l; i++) {
+        if(i != 0) printf(", ");
+        ImmutableListNode *n = list_head(list);
+        if(n != NULL) {
+            list = list_tail(list);
+            printf("%d", *(int *)(n->value));
+        }
     }
+    printf(" ]\n");
 
-    Parser *p = malloc(sizeof(Parser));
-    if( p == NULL ) {
-        puts("Out of memory?\n");
-        return 20;
+    printf("orig: [ ");
+    l = orig->length;
+    for(unsigned int i = 0; i < l; i++) {
+        if(i != 0) printf(", ");
+        ImmutableListNode *n = list_head(orig);
+        if(n != NULL) {
+            orig = list_tail(orig);
+            printf("%d", *(int *)(n->value));
+        }
     }
-    p->fn = &parse_char;
-    p->argc = 1;
-    p->args = (ParserArg **)malloc(sizeof(ParserArg*));
-    if( p->args == NULL ) {
-        puts("Out of memory?\n");
-        return 20;
-    }
-    p->args[0] = malloc(sizeof(ParserArg));
-    p->args[0]->literal.type = PARG_LITERAL;
-    p->args[0]->literal.lit  = 'a';
+    printf(" ]\n");
 
-    Parser *q = malloc(sizeof(Parser));
-    if( q == NULL ) {
-        puts("Out of memory?\n");
-        return 20;
-    }
-    q->fn = &parse_char;
-    q->argc = 1;
-    q->args = (ParserArg **)malloc(sizeof(ParserArg*));
-    if( q->args == NULL ) {
-        puts("Out of memory?\n");
-        return 20;
-    }
-    q->args[0] = malloc(sizeof(ParserArg));
-    q->args[0]->literal.type = PARG_LITERAL;
-    q->args[0]->literal.lit  = 'b';
-    Parser *many_p = malloc(sizeof(Parser));
-    if( many_p == NULL ) {
-        puts("Out of memory?\n");
-        return 20;
-    }
-
-    many_p->fn = &parse_repeatedly;
-    many_p->argc = 2;
-    many_p->args = (ParserArg**)malloc(sizeof(ParserArg*)*2);
-    if( many_p->args == NULL ) {
-        puts("Out of memory?\n");
-        return 20;
-    }
-
-    many_p->args[0] = malloc(sizeof(ParserArg));
-    many_p->args[0]->parser.type = PARG_PARSER;
-    many_p->args[0]->parser.parser = p;
-    many_p->args[1] = malloc(sizeof(ParserArg));
-    many_p->args[1]->parser.type = PARG_PARSER;
-    many_p->args[1]->parser.parser = q;
-
-    FILE *stream = fopen(argv[1], "r");
-
-    printf("%d\n", apply_parser(stream, many_p));
-    
     return 0;
 }
 
