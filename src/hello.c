@@ -73,6 +73,8 @@ int main(/*int argc, char **argv*/) {
     }
     printf(" ]\n");
 
+    printf("free orig: %d\n", list_free(orig));
+
     return 0;
 }
 

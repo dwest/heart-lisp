@@ -11,6 +11,7 @@ typedef struct ImmutableListNode {
 
 typedef struct ImmutableList {
     unsigned int length;
+    unsigned int refs;
     ImmutableListNode *head;
 } ImmutableList;
 
@@ -21,5 +22,6 @@ bool list_empty(ImmutableList *list);
 ImmutableList* list_prepend(ImmutableList *list, unsigned int type, void *value);
 ImmutableList* list_append(ImmutableList *list, unsigned int type, void *value);
 ImmutableList* list_concat(ImmutableList *a, ImmutableList *b);
+unsigned int list_free(ImmutableList *list);
 
 #endif
