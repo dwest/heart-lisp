@@ -31,8 +31,26 @@ int main(/*int argc, char **argv*/) {
     list = list_append(list, 0, &aff);
     printf("length after: %d\n", list->length);
 
+    // test concat
+    printf("length a: %d, length b: %d\n", orig->length, list->length);
+    ImmutableList *cattd = list_concat(orig, list);
+
+    unsigned int l = 0;
+
+    printf("orig: [ ");
+    l = orig->length;
+    for(unsigned int i = 0; i < l; i++) {
+        if(i != 0) printf(", ");
+        ImmutableListNode *n = list_head(orig);
+        if(n != NULL) {
+            orig = list_tail(orig);
+            printf("%d", *(int *)(n->value));
+        }
+    }
+    printf(" ]\n");
+
     printf("update: [ ");
-    unsigned int l = list->length;
+    l = list->length;
     for(unsigned int i = 0; i < l; i++) {
         if(i != 0) printf(", ");
         ImmutableListNode *n = list_head(list);
@@ -43,13 +61,13 @@ int main(/*int argc, char **argv*/) {
     }
     printf(" ]\n");
 
-    printf("orig: [ ");
-    l = orig->length;
+    printf("cattd: [ ");
+    l = cattd->length;
     for(unsigned int i = 0; i < l; i++) {
         if(i != 0) printf(", ");
-        ImmutableListNode *n = list_head(orig);
+        ImmutableListNode *n = list_head(cattd);
         if(n != NULL) {
-            orig = list_tail(orig);
+            cattd = list_tail(cattd);
             printf("%d", *(int *)(n->value));
         }
     }

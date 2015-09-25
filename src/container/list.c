@@ -66,12 +66,12 @@ ImmutableList* list_prepend(ImmutableList *list, unsigned int type, void *value)
 }
 
 ImmutableList* list_append(ImmutableList *list, unsigned int type, void *value) {
-    int nodecount = list->length+1;
+    unsigned int nodecount = list->length+1;
     ImmutableList *changed = malloc(sizeof(ImmutableList));
     ImmutableListNode *nodes = malloc(nodecount*sizeof(ImmutableListNode));
 
     ImmutableListNode *curr = list->head;
-    for(int i = 0; i < nodecount; i++) {
+    for(unsigned int i = 0; i < nodecount; i++) {
         if(i < nodecount-1) {
             nodes[i] = *curr;
             nodes[i].next = &nodes[i+1];
@@ -98,7 +98,7 @@ ImmutableList* list_concat(ImmutableList *a, ImmutableList *b) {
         return a;
     }
 
-    int nodecount           = a->length+1;
+    unsigned int nodecount  = a->length;
     ImmutableList *combined = malloc(sizeof(ImmutableList));
     ImmutableListNode *as   = malloc(nodecount*sizeof(ImmutableListNode));
 
@@ -106,14 +106,16 @@ ImmutableList* list_concat(ImmutableList *a, ImmutableList *b) {
     for(unsigned int i = 0; i < nodecount; i++) {
         as[i] = *curr;
         if(i < nodecount-1) {
-            curr  = curr->next;
+            as[i].next = &as[i+1];
+            curr = curr->next;
         }
         else {
             as[i].next = b->head;
         }
     }
+
     combined->length = a->length + b->length;
-    combined->head = as[0];
+    combined->head = as;
 
     return combined;
 }
