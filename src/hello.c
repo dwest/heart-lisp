@@ -6,7 +6,7 @@
 
 int main(/*int argc, char **argv*/) {
     int v0 = 0, v1 = 1, v2 = 1, v3 = 2, v4 = 3, v5 = 5, v6 = 8, v7 = 13;
-    ImmutableList *list = list_create(8, 
+    ImmutableListNode *list = list_create(8, 
                                       0, &v0,
                                       0, &v1,
                                       0, &v2,
@@ -16,24 +16,28 @@ int main(/*int argc, char **argv*/) {
                                       0, &v6,
                                       0, &v7);
 
-    ImmutableList *orig = list;
+    ImmutableListNode *orig = list;
 
     // test prepend
+    printf("Testing Prepend:\n");
     printf("length before: %d\n", list->length);
     int pref = 42;
     list = list_prepend(list, 0, &pref);
     printf("length after: %d\n", list->length);
 
     // test append
+    printf("Testing Append (2x):\n");
     printf("length before: %d\n", list->length);
     int aff = 21;
     list = list_append(list, 0, &aff);
+    printf("length after 1x: %d\n", list->length);
     list = list_append(list, 0, &aff);
-    printf("length after: %d\n", list->length);
+    printf("length after 2x: %d\n", list->length);
 
     // test concat
+    printf("Testing Concatenation:\n");
     printf("length a: %d, length b: %d\n", orig->length, list->length);
-    ImmutableList *cattd = list_concat(orig, list);
+    ImmutableListNode *cattd = list_concat(orig, list);
 
     unsigned int l = 0;
 
@@ -73,7 +77,7 @@ int main(/*int argc, char **argv*/) {
     }
     printf(" ]\n");
 
-    printf("free orig: %d\n", list_free(orig));
+    //printf("free orig: %d\n", list_free(orig));
 
     return 0;
 }
