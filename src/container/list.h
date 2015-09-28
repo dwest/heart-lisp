@@ -18,6 +18,8 @@ bool list_empty(ImmutableListNode *list);
 ImmutableListNode* list_prepend(ImmutableListNode *list, unsigned int type, void *value);
 ImmutableListNode* list_append(ImmutableListNode *list, unsigned int type, void *value);
 ImmutableListNode* list_concat(ImmutableListNode *a, ImmutableListNode *b);
-/* unsigned int list_free(ImmutableList *list); */
+void list_print(FILE *stream, ImmutableListNode *list);
+ImmutableListNode* list_free(ImmutableListNode *list);
+void list_dump(FILE *stream, ImmutableListNode *list);
 
 #endif

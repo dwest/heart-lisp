@@ -5,28 +5,31 @@
 
 ImmutableListNode* list_create(unsigned int length, ...) {
     va_list vargs;
-    unsigned int node_len    = length;
-    ImmutableListNode *nodes = malloc(length*sizeof(ImmutableListNode));
+    unsigned int node_len = length;
+    ImmutableListNode *head = NULL, *curr, *prev;
 
     va_start(vargs, length);
     for(unsigned int i = 0; i < length; i++) {
-        nodes[i] = (ImmutableListNode) {
+        curr = malloc(sizeof(ImmutableListNode));
+        *curr = (ImmutableListNode) {
             .type   = va_arg(vargs, unsigned int),
             .value  = va_arg(vargs, void*),
             .length = node_len--,
             .refs   = 1
         };
 
-        if(i < length-1) {
-            nodes[i].next = &nodes[i+1];
+        if(i == 0) {
+            head = curr;
         }
         else {
-            nodes[i].next = NULL; // was probably already null
+            prev->next = curr;
         }
+
+        prev = curr;
     }
     va_end(vargs);
 
-    return nodes;
+    return head;
 }
 
 ImmutableListNode* list_head(ImmutableListNode *list) {
@@ -79,18 +82,19 @@ ImmutableListNode* list_append(ImmutableListNode *list, unsigned int type, void 
     }
 
     unsigned int nodecount = list->length+1;
-    ImmutableListNode *nodes = malloc(nodecount*sizeof(ImmutableListNode));
+    ImmutableListNode *head = NULL, *curr, *prev = NULL;
+    ImmutableListNode *np = list;
 
-    ImmutableListNode *curr = list;
     for(unsigned int i = 0; i < nodecount; i++) {
+        curr = malloc(sizeof(ImmutableListNode));
+
         if(i < nodecount-1) {
-            nodes[i]      = *curr;
-            nodes[i].next = &nodes[i+1];
-            ++nodes[i].length;
-            curr = curr->next;
+            *curr = *np;
+            ++curr->length;
+            np = np->next;
         }
         else {
-            nodes[i] = (ImmutableListNode) {
+            *curr = (ImmutableListNode) {
                 .type   = type,
                 .value  = value,
                 .length = 1,
@@ -98,10 +102,18 @@ ImmutableListNode* list_append(ImmutableListNode *list, unsigned int type, void 
             };
         }
 
-        nodes[i].refs = 1;
+        if(i == 0) {
+            head = curr;
+        }
+        else {
+            prev->next = curr;
+        }
+
+        curr->refs = 1;
+        prev = curr;
     }
 
-    return nodes;
+    return head;
 }
 
 ImmutableListNode* list_concat(ImmutableListNode *a, ImmutableListNode *b) {
@@ -114,30 +126,88 @@ ImmutableListNode* list_concat(ImmutableListNode *a, ImmutableListNode *b) {
 
     b->refs++;
 
-    unsigned int nodecount  = a->length;
-    unsigned int node_len   = a->length + b->length;
-    ImmutableListNode *as   = malloc(nodecount*sizeof(ImmutableListNode));
+    unsigned int nodecount = a->length;
+    unsigned int node_len  = a->length + b->length;
+    ImmutableListNode *head = NULL, *curr = NULL, *prev = NULL, *np = a;
 
-    ImmutableListNode *curr = a;
     for(unsigned int i = 0; i < nodecount; i++) {
-        as[i]        = *curr;
-        as[i].length = node_len--;
+        curr = malloc(sizeof(ImmutableListNode));
+        *curr = *np;
+        curr->length = node_len--;
+        curr->refs = 1;
 
         if(i < nodecount-1) {
-            as[i].next = &as[i+1];
-            curr = curr->next;
+            np = np->next;
         }
         else {
-            as[i].next = b;
+            curr->next = b;
         }
+
+        if(i == 0) {
+            head = curr;
+        }
+        else {
+            prev->next = curr;
+        }
+
+        prev = curr;
     }
 
-    return as;
+    return head;
 }
 
-/* unsigned int list_free(ImmutableListNode *list) { */
-/*     if(--(list->refs) != 0) { */
-/*         return list->refs; */
-/*     } */
-/* } */
+void list_print(FILE *stream, ImmutableListNode *list) {
+    ImmutableListNode *head = list_head(list);
+    ImmutableListNode *tail = list_tail(list);
+    ImmutableListNode *prev;
+    unsigned int l = head->length;
+
+    fprintf(stream, "`( ");
+    for(unsigned int i = 0; i < l; i++) {
+        if(i) fprintf(stream, ", ");
+
+        fprintf(stream, "%d", *(unsigned int *)head->value);
+        list_free(head);
+        head = list_head(tail);
+        prev = tail;
+        tail = list_tail(tail);
+        list_free(prev);
+    }
+    fprintf(stream, " )\n");
+}
+
+ImmutableListNode* list_free(ImmutableListNode *list) {
+    if(list_empty(list)) {
+        return NULL;
+    }
+
+    ImmutableListNode *curr = list, *next;
+    while((--curr->refs) == 0) {
+        next = curr->next;
+        free(curr);
+        if(!next) {
+            return NULL;
+        }
+        curr = next;
+    }
+
+    return curr;
+}
+
+void list_dump(FILE *stream, ImmutableListNode *list) {
+    ImmutableListNode *curr = list;
+    fprintf(stream, "(\n");
+    while(curr) {
+        fprintf(stream, 
+                "\t %p: { type = %u, refs = %u, length = %u, next = %p, value = %u }\n",
+                curr,
+                curr->type,
+                curr->refs,
+                curr->length,
+                curr->next,
+                *(unsigned int *)curr->value);
+        curr = curr->next;
+    }
+    fprintf(stream, ")\n");
+}
 
